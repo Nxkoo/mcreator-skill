@@ -1,4 +1,4 @@
 interface:
-  display_name: "MCreator AI"
+  display_name: "MCreator Skill"
   short_description: "Safe MCreator workspace editing"
-  default_prompt: "Use $mcreator-ai to inspect this MCreator workspace and plan safe, lock-aware changes before editing."
+  default_prompt: "Use $mcreator-skill to inspect this MCreator workspace and plan safe, lock-aware changes before editing."

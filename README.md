@@ -1,8 +1,12 @@
-# MCreator AI Skill
+# MCreator Skill
+
+[![skills.sh](https://skills.sh/b/Nxkoo/mcreator-skill)](https://skills.sh/Nxkoo/mcreator-skill)
 
 An Agent Skill that helps Codex and other compatible AI coding agents work safely inside MCreator workspaces.
 
-MCreator projects mix structured mod elements, generated code, locked elements, resources, plugins, and manual Java. This skill gives an AI agent explicit rules for inspecting that structure before editing, preferring native MCreator capabilities, protecting code from regeneration, and using [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) MCP tools when available.
+MCreator projects mix structured mod elements, generated code, locked elements, resources, plugins, and manual Java. This skill gives an AI agent explicit guidance for inspecting that structure before editing, preferring native MCreator capabilities, protecting code from regeneration, and using [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) MCP tools when the host agent exposes them.
+
+The skill contains guidance and instructions only. It does not directly access files, edit workspaces, or call MCP tools by itself; those capabilities depend on the AI coding agent where it is installed.
 
 ## What It Covers
 
@@ -19,53 +23,57 @@ MCreator projects mix structured mod elements, generated code, locked elements, 
 
 ## Installation
 
-### Codex user skill
+Install interactively for supported agents:
 
-Clone the repository into your user skills directory:
-
-```powershell
-git clone https://github.com/Nxkoo/mcreator-skill.git "$env:USERPROFILE\.agents\skills\mcreator-ai"
+```bash
+npx skills add Nxkoo/mcreator-skill
 ```
 
-Codex detects skills from `%USERPROFILE%\.agents\skills`. Restart Codex if the skill does not appear immediately.
+Install specifically for Codex:
 
-To update later:
-
-```powershell
-git -C "$env:USERPROFILE\.agents\skills\mcreator-ai" pull
+```bash
+npx skills add Nxkoo/mcreator-skill -a codex
 ```
 
-### Repository-scoped skill
+Install specifically for Cursor:
 
-To make the skill available only inside a specific repository:
-
-```powershell
-git clone https://github.com/Nxkoo/mcreator-skill.git ".agents\skills\mcreator-ai"
+```bash
+npx skills add Nxkoo/mcreator-skill -a cursor
 ```
 
-Codex scans `.agents/skills` from the current working directory up to the repository root.
+Install specifically for Claude Code:
 
-### Other Agent Skills-compatible tools
+```bash
+npx skills add Nxkoo/mcreator-skill -a claude-code
+```
 
-This repository follows the Agent Skills format: a root `SKILL.md` with optional `agents/openai.yaml` metadata. Install or import this repository using your agent's supported skill installation flow.
+The repository exposes a valid root-level `SKILL.md`, so the public skills CLI discovers it without requiring full-depth scanning.
+
+## Test Discovery
+
+List the skills discoverable from this repository without installing:
+
+```bash
+npx skills add Nxkoo/mcreator-skill --list
+```
 
 ## Usage
 
 Invoke it explicitly:
 
 ```text
-Use $mcreator-ai to inspect this MCreator workspace and fix the build error without refactoring unrelated files.
+Use $mcreator-skill to inspect this MCreator workspace and fix the build error without refactoring unrelated files.
 ```
 
 ```text
-Use $mcreator-ai to create a GeckoLib entity safely and use MCreator Agent MCP tools when available.
+Use $mcreator-skill to plan a GeckoLib entity safely and use MCreator Agent MCP tools when available to the host agent.
 ```
 
 Codex may also invoke the skill automatically when a task matches the `SKILL.md` description.
 
 ## MCreator Agent MCP
 
-The skill can automatically detect and use [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) tools already configured in Codex.
+The skill guides a compatible host agent to detect and use [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) tools already configured in Codex.
 
 MCreator Agent must be running inside MCreator with a workspace open. Its local MCP endpoint normally starts at:
 
@@ -92,7 +100,7 @@ Example Codex/VS Code MCP configuration:
 }
 ```
 
-The skill prefers configured MCP tools for workspace metadata, mod elements, locks, regeneration, builds, run targets, and GeckoLib operations. It falls back to safe file inspection when the MCP server is unavailable.
+The guidance recommends configured MCP tools for workspace metadata, mod elements, locks, regeneration, builds, run targets, and GeckoLib operations. The host agent determines whether those tools and file inspection capabilities are available.
 
 ## Core Safety Rules
 

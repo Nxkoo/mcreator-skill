@@ -1,27 +1,27 @@
 ---
-name: mcreator-ai
-description: Safe MCreator workspace inspection, planning, editing, and review for Minecraft mod development. Use when working in MCreator workspaces or with MCreator 2024.4, Minecraft 1.20.1 or 1.21.1, Forge, NeoForge, Fabric, Bedrock/datapack generators, GeckoLib plugins, MCreator Agent/MCP tools, mod element creation or editing, build fixes, lock decisions, custom Java, package hygiene, assets, resources, recipes, tags, loot tables, localization, or workspace regeneration safety.
+name: mcreator-skill
+description: MCreator-specific guidance for AI coding agents working with MCreator workspaces, mod elements, GeckoLib workflows, generated-code boundaries, and safe validation loops.
 ---
 
-# MCreator AI
+# MCreator Skill
 
-Use this skill to work safely inside MCreator workspaces. Prioritize native MCreator behavior, preserve regeneration safety, keep Java packages clean, and use MCP/MCreator Agent tools when they are available.
+Use this skill as guidance for working safely inside MCreator workspaces. The host AI coding agent remains responsible for file access, tool use, MCP calls, edits, and validation. Prioritize native MCreator behavior, preserve regeneration safety, keep Java packages clean, and guide the host agent to use MCreator Agent tools when they are available.
 
-## Codex MCP Detection
+## MCP-Aware Guidance
 
-When running in Codex, assume the MCreator Agent MCP server may already be configured for the current session. Do not ask the user whether it is configured before checking.
+When the host agent is Codex, guide it to check whether the MCreator Agent MCP server is already configured for the current session before asking the user.
 
-First, inspect the active Codex tool/MCP surface for an MCreator Agent server or tools/resources matching `mcreator-agent`, `getWorkspaceInfo`, `listModElements`, `setModElementLock`, `regenerateCode`, `buildWorkspace`, `getGeckoLibStatus`, `listGeckoLibAssets`, `importGeckoLibAssets`, `createGeckoLibElement`, or `validateGeckoLibElement`.
+The host agent should inspect its active tool/MCP surface for an MCreator Agent server or tools/resources matching `mcreator-agent`, `getWorkspaceInfo`, `listModElements`, `setModElementLock`, `regenerateCode`, `buildWorkspace`, `getGeckoLibStatus`, `listGeckoLibAssets`, `importGeckoLibAssets`, `createGeckoLibElement`, or `validateGeckoLibElement`.
 
-If those tools are available, use them for supported workspace operations before falling back to manual file inspection or shell commands. Prefer MCP for workspace metadata, mod element listing, lock state, element creation/deletion, lock/unlock, regeneration, builds, client/server runs, plugin state, and GeckoLib asset/element validation.
+If those tools are available to the host agent, prefer them for supported workspace operations before falling back to manual file inspection or shell commands. Prefer MCP for workspace metadata, mod element listing, lock state, element creation/deletion, lock/unlock, regeneration, builds, client/server runs, plugin state, and GeckoLib asset/element validation.
 
-If Codex does not expose the tools directly, check whether MCreator Agent is reachable only when local HTTP access is appropriate for the environment:
+If Codex does not expose the tools directly, guide the host agent to check whether MCreator Agent is reachable only when local HTTP access is appropriate for the environment:
 
 - MCreator Agent usually serves MCP at `http://localhost:5175/mcp`, or the next free port.
 - The active port is written to `%USERPROFILE%\.mcreator\mcp\port`.
 - A basic MCP readiness probe is a JSON-RPC `tools/list` POST to the MCP endpoint.
 
-MCreator must be running with the plugin loaded and a workspace open. If MCP is configured but unavailable, report that state and continue with safe read-only inspection unless the user asks to repair the MCP setup.
+MCreator must be running with the plugin loaded and a workspace open. If MCP is configured but unavailable, the host agent should report that state and continue with safe read-only inspection unless the user asks to repair the MCP setup.
 
 ## Core Workflow
 
@@ -136,7 +136,7 @@ When MCreator Agent/MCP GeckoLib tools exist, prefer the GeckoLib-specific path 
 
 ## MCP And MCreator Agent
 
-When MCreator Agent/MCP tools are available, prefer the configured Codex MCP tools directly. Discover the actual tool names first and use the available equivalents for:
+When MCreator Agent/MCP tools are available to the host agent, guide it to prefer the configured Codex MCP tools directly. Discover the actual tool names first and use the available equivalents for:
 
 - Listing workspace metadata.
 - Listing mod elements and locked elements.
@@ -149,7 +149,7 @@ When MCreator Agent/MCP tools are available, prefer the configured Codex MCP too
 - Reading plugin state.
 - Validating GeckoLib setup.
 
-Do not invent exact MCP tool names. If the current Codex session exposes tools such as `getWorkspaceInfo`, `listModElements`, `createElement`, `deleteElement`, `setModElementLock`, `regenerateCode`, `buildWorkspace`, `runClient`, `runServer`, `getGeckoLibStatus`, `listGeckoLibAssets`, `importGeckoLibAssets`, `createGeckoLibElement`, or `validateGeckoLibElement`, prefer them for their matching operation after confirming they are currently available.
+Do not invent exact MCP tool names. If the current Codex session exposes tools such as `getWorkspaceInfo`, `listModElements`, `createElement`, `deleteElement`, `setModElementLock`, `regenerateCode`, `buildWorkspace`, `runClient`, `runServer`, `getGeckoLibStatus`, `listGeckoLibAssets`, `importGeckoLibAssets`, `createGeckoLibElement`, or `validateGeckoLibElement`, guide the host agent to prefer them for their matching operation after confirming they are currently available.
 
 Useful MCreator Agent resources may include `workspace://overview`, `workspace://elements`, `workspace://structure`, `workspace://geckolib/status`, and `workspace://geckolib/assets`. Read them when available instead of rediscovering the same facts from disk.
 
