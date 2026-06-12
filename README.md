@@ -1,6 +1,10 @@
 # MCreator Skill
 
-[![skills.sh](https://skills.sh/b/Nxkoo/mcreator-skill)](https://skills.sh/Nxkoo/mcreator-skill)
+![Agent Skill](https://img.shields.io/badge/agent%20skill-mcreator--skill-0ea5e9)
+![Install](https://img.shields.io/badge/install-npx%20skills%20add-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+> The skill is installable with the open skills CLI. The public [skills.sh page](https://skills.sh/Nxkoo/mcreator-skill) may take time to index or may be unavailable.
 
 An Agent Skill that helps Codex and other compatible AI coding agents work safely inside MCreator workspaces.
 
@@ -21,41 +25,45 @@ The skill contains guidance and instructions only. It does not directly access f
 - Post-regeneration review and restoration of classes that should not have been deleted.
 - Required validation and end-of-task reporting.
 
-## Installation
+## Install
 
-Install interactively for supported agents:
+Install with the open skills CLI:
 
 ```bash
 npx skills add Nxkoo/mcreator-skill
 ```
 
-Install specifically for Codex:
+Install for a specific agent:
 
 ```bash
-npx skills add Nxkoo/mcreator-skill -a codex
+npx skills add Nxkoo/mcreator-skill --skill mcreator-skill -a codex
+npx skills add Nxkoo/mcreator-skill --skill mcreator-skill -a cursor
+npx skills add Nxkoo/mcreator-skill --skill mcreator-skill -a claude-code
 ```
 
-Install specifically for Cursor:
-
-```bash
-npx skills add Nxkoo/mcreator-skill -a cursor
-```
-
-Install specifically for Claude Code:
-
-```bash
-npx skills add Nxkoo/mcreator-skill -a claude-code
-```
-
-The repository exposes a valid root-level `SKILL.md`, so the public skills CLI discovers it without requiring full-depth scanning.
-
-## Test Discovery
-
-List the skills discoverable from this repository without installing:
+List available skills without installing:
 
 ```bash
 npx skills add Nxkoo/mcreator-skill --list
 ```
+
+The repository exposes a valid root-level `SKILL.md`, so the public skills CLI discovers it without requiring full-depth scanning.
+
+## Validate
+
+The repository should expose exactly one skill:
+
+```bash
+npx skills add Nxkoo/mcreator-skill --list
+```
+
+Expected output:
+
+```text
+Found 1 skill: mcreator-skill
+```
+
+If the CLI finds the skill but the skills.sh page still says `resource not found`, the skill is still installable. The public directory/badge may not have indexed it yet.
 
 ## Usage
 
