@@ -52,6 +52,16 @@ Before changing files, inspect or infer:
 
 Use the workspace files and available tools as the source of truth. Do not assume version, generator, plugin, or asset state from the user's prompt alone.
 
+## Workspace State Consistency
+
+A mod element is not fully created or configured until all available validation layers agree:
+
+- `elements/<Name>.mod.json` existing is not enough. When applicable, the `.mcreator` workspace file must also include the element in `mod_elements`.
+- When MCP is available, `listModElements` must list the element in the currently open MCreator workspace.
+- For GeckoLib elements, `validateGeckoLibElement` must see the element when that tool is available.
+- If filesystem and MCP state disagree, report the workspace as stale/divergent.
+- Do not claim an element was fully created in MCreator when `listModElements` does not show it. Only claim that a filesystem fallback was performed, and state that the MCreator workspace/UI may need reload or refresh.
+
 ## Editing Priority
 
 Prefer solutions in this order:
@@ -133,8 +143,16 @@ GeckoLib is a first-class concern for this skill.
 - Do not make hitbox or gameplay logic depend on animation timing unless the user explicitly requires it.
 - Lock GeckoLib-generated entity/item/block/armor elements before direct generated Java edits.
 - Temporary GeckoLib entities must clean themselves up safely with timers or equivalent logic.
+- Do not assume `listGeckoLibAssets` means the runtime renderer can load an asset. Verify both authoring/import paths and runtime resource paths.
+- Check Java `GeoModel` and renderer resource locations, then confirm files exist at those exact paths.
+- For GeckoLib entities/items, validate likely runtime paths such as `src/main/resources/assets/<modid>/geo/<name>.geo.json`, `src/main/resources/assets/<modid>/animations/<name>.animation.json`, `src/main/resources/assets/<modid>/textures/entities/<name>.png`, and applicable item textures/models.
+- If paths differ by plugin, generator, or version, inspect the actual generated Java and resource tree instead of assuming.
 
 When MCreator Agent/MCP GeckoLib tools exist, prefer the GeckoLib-specific path for animated element creation/validation rather than a generic element creation path.
+
+### Item/Blockbench Model Texture References
+
+When importing Blockbench item models, inspect internal texture references before declaring success. Fix wrong namespaces, folders, non-ASCII names, unrelated texture names, or references such as `block/...` when the texture belongs under `textures/item/...`. Do not only copy the model JSON; verify the texture references inside it.
 
 ## MCP And MCreator Agent
 
@@ -197,6 +215,7 @@ src/main/java/<basepackage>/client/renderer/<Name>Renderer.java
 
 Before regeneration or builds:
 
+- Do not run `regenerateCode` when the currently open MCreator/MCP workspace does not recognize the mod element just created or modified. Regeneration in this divergent state may delete or overwrite manual Java, classes, or assets created as fallback. Refresh, reload, or reconcile workspace state first, or explicitly report that regeneration was skipped for safety.
 - Confirm whether edits live in files MCreator may overwrite.
 - Prefer native element metadata/resources for generated behavior.
 - Verify all created/imported/edited element-owned files are listed in the owning element's `.mcreator` `metadata.files`.
@@ -215,17 +234,24 @@ After running MCP `regenerateCode` or any equivalent MCreator regeneration:
 - Re-run the appropriate validation after restoration.
 - Report every class that regeneration deleted, which classes were restored or intentionally left deleted, and the reason for each decision.
 
+### False Success Red Flags
+
+- Gradle builds, but `listModElements` does not show the element.
+- A `.mod.json` exists, but MCP validation fails.
+- The GeckoLib plugin is loaded, but `typesAvailable=false`.
+- Assets are listed, but Java resource locations point somewhere else.
+- Model JSON exists, but internal texture references point to wrong folders or assets.
+- Regeneration would run while the open MCreator workspace is stale.
+
 ## Task Report
 
-End every task with:
+End every task with a validation matrix that distinguishes:
 
-- What was added or changed.
-- Which mod elements were created or edited.
-- Which assets were imported or edited.
-- Which files were changed.
-- Whether any mod element was locked.
-- Whether custom Java was used.
-- Why custom Java was necessary, if used.
-- What validation was run.
-- What still needs manual testing inside MCreator.
-- Which files were added to `.mcreator` `metadata.files`.
+- Filesystem changes: files written or edited.
+- MCreator/MCP recognition: `listModElements`.
+- GeckoLib element validation: `validateGeckoLibElement`.
+- GeckoLib asset discovery: `listGeckoLibAssets`.
+- Java/resource compilation: Gradle or `buildWorkspace`.
+- Manual runtime/UI validation still needed: inventory model, texture, spawn, hitbox, tooltip, animation, and behavior.
+
+Also report which mod elements and assets changed, which files were added to `.mcreator` `metadata.files`, whether elements were locked, whether custom Java was used and why, and any regeneration deletions/restorations. Never collapse validation layers into a single "done" claim. Say exactly which layers passed, failed, were unavailable, or were skipped.
