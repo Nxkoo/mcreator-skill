@@ -1,6 +1,6 @@
 ---
 name: mcreator-skill
-description: MCreator-specific guidance for AI coding agents working with MCreator workspaces, mod elements, GeckoLib workflows, generated-code boundaries, and safe validation loops.
+description: Use when AI coding agents work with MCreator workspaces, mod elements, GeckoLib workflows, .mcreator metadata.files tracking, generated-code boundaries, and safe validation loops.
 ---
 
 # MCreator Skill
@@ -29,9 +29,10 @@ MCreator must be running with the plugin loaded and a workspace open. If MCP is 
 2. Prefer MCreator-native configuration before custom code.
 3. Classify every file that may be edited.
 4. Lock generated mod elements before direct generated-Java edits.
-5. Keep custom Java under the mod root package with clean feature boundaries.
-6. Validate with the narrowest reliable build/check path.
-7. Report locks, custom Java, assets, validation, and remaining manual MCreator testing.
+5. Register created/imported/edited element-owned files in `.mcreator` `metadata.files` before regeneration or build checks.
+6. Keep custom Java under the mod root package with clean feature boundaries.
+7. Validate with the narrowest reliable build/check path.
+8. Report locks, custom Java, assets, metadata files, validation, and remaining manual MCreator testing.
 
 ## Workspace Inspection
 
@@ -44,6 +45,7 @@ Before changing files, inspect or infer:
 - Installed plugins, especially GeckoLib.
 - Existing mod elements and their types.
 - Existing locked elements.
+- Existing `.mcreator` `metadata.files` entries for affected elements.
 - Existing custom Java.
 - Existing assets, models, textures, animations, lang files, tags, recipes, and loot tables.
 - Whether MCreator Agent/MCP tools are available.
@@ -157,8 +159,39 @@ MCreator Agent cautions:
 
 - MCP-created elements must persist both the in-memory workspace state and the on-disk `.mod.json`.
 - After create/delete or other workspace mutations, the MCreator UI may need an explicit workspace panel refresh.
-- Helper/client/network files that must survive regeneration may need to be represented in element metadata.
+- Helper/client/network files that must survive regeneration must be represented in the owning mod element's `.mcreator` `metadata.files`.
 - Broad local Gradle or MCreator tests can be polluted by unrelated plugins in `%USERPROFILE%\.mcreator\plugins`; prefer the narrow reliable validation target for the current repo and report environmental pollution separately.
+
+## MCreator Metadata Files Policy
+
+When the host agent creates, imports, edits, or manually adds any file that belongs to a mod element, it must register that file in the workspace `.mcreator` file under the owning mod element's `metadata.files` before running regeneration or build checks.
+
+This is mandatory for regeneration safety. MCreator may delete, ignore, or fail to track files that are not represented in element metadata.
+
+Apply this policy whether the host agent uses MCreator MCP tools, MCreator Agent tools, GeckoLib tools, manual file edits, or fallback Java/resource creation.
+
+For each affected mod element, guide the host agent to:
+
+- Ensure the element entry in `<workspace>.mcreator` has a `metadata` object.
+- Ensure `metadata.files` includes every Java, resource, model, texture, animation, lang, tag, recipe, loot table, helper, renderer, network, or client file owned by that element.
+- Include generated entity, item, block, procedure, init, renderer, model, menu, network, and client classes when they are owned by or required for that mod element.
+- Include runtime resource paths, not only workspace/import paths.
+- Include manually created fallback files before running regeneration or build checks.
+- Re-read the `.mcreator` file after mutations and verify the files are listed.
+- Avoid relying only on `.mod.json`; `.mod.json` defines the element, while `.mcreator` tracks files that must survive workspace operations.
+
+For GeckoLib elements, include both MCreator import paths and runtime resource paths when both exist, for example:
+
+```text
+models/<name>.geo.json
+models/animations/<name>.animation.json
+src/main/resources/assets/<modid>/geo/<name>.geo.json
+src/main/resources/assets/<modid>/animations/<name>.animation.json
+src/main/resources/assets/<modid>/textures/entities/<name>.png
+src/main/java/<basepackage>/entity/<Name>Entity.java
+src/main/java/<basepackage>/client/model/<Name>Model.java
+src/main/java/<basepackage>/client/renderer/<Name>Renderer.java
+```
 
 ## Regeneration Safety
 
@@ -166,6 +199,7 @@ Before regeneration or builds:
 
 - Confirm whether edits live in files MCreator may overwrite.
 - Prefer native element metadata/resources for generated behavior.
+- Verify all created/imported/edited element-owned files are listed in the owning element's `.mcreator` `metadata.files`.
 - Keep manual feature classes outside generated technical packages.
 - Avoid formatting or rewriting generated files unless necessary for the requested change.
 - Capture the pre-regeneration state using version-control status/diff or an equivalent file inventory so deleted classes can be identified afterward.
@@ -194,3 +228,4 @@ End every task with:
 - Why custom Java was necessary, if used.
 - What validation was run.
 - What still needs manual testing inside MCreator.
+- Which files were added to `.mcreator` `metadata.files`.

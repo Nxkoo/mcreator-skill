@@ -8,7 +8,7 @@
 
 An Agent Skill that helps Codex and other compatible AI coding agents work safely inside MCreator workspaces.
 
-MCreator projects mix structured mod elements, generated code, locked elements, resources, plugins, and manual Java. This skill gives an AI agent explicit guidance for inspecting that structure before editing, preferring native MCreator capabilities, protecting code from regeneration, and using [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) MCP tools when the host agent exposes them.
+MCreator projects mix structured mod elements, generated code, locked elements, resources, plugins, and manual Java. This skill gives an AI agent explicit guidance for inspecting that structure before editing, preferring native MCreator capabilities, registering element-owned files in `.mcreator` `metadata.files`, protecting code from regeneration, and using [MCreator Agent](https://github.com/Nxkoo/MCreator-Agent) MCP tools when the host agent exposes them.
 
 The skill contains guidance and instructions only. It does not directly access files, edit workspaces, or call MCP tools by itself; those capabilities depend on the AI coding agent where it is installed.
 
@@ -22,6 +22,7 @@ The skill contains guidance and instructions only. It does not directly access f
 - MCreator 2024.4 and Minecraft 1.20.1 / 1.21.1 workflows.
 - GeckoLib asset, element, model, animation, and validation safety.
 - Automatic detection and use of configured MCreator Agent MCP tools in Codex.
+- Required `.mcreator` `metadata.files` tracking for files that must survive regeneration/builds.
 - Post-regeneration review and restoration of classes that should not have been deleted.
 - Required validation and end-of-task reporting.
 
@@ -115,6 +116,7 @@ The guidance recommends configured MCP tools for workspace metadata, mod element
 - Inspect the MCreator version, Minecraft version, generator, mod ID, root package, plugins, elements, locks, custom Java, and assets before editing.
 - Prefer native mod element settings, procedures, resources, plugin features, and MCP tools before custom Java.
 - Lock a generated mod element before directly editing its generated Java.
+- Register every created, imported, or edited element-owned file in the owning element's `.mcreator` `metadata.files` before regeneration or build checks.
 - Keep helpers, handlers, services, controllers, and feature systems out of generated technical packages such as `.entity`, `.item`, `.block`, `.procedures`, and `.init`.
 - Read real GeckoLib assets and metadata before assuming model, animation, controller, or texture names.
 - Before regeneration, capture the current state. After regeneration, evaluate every deleted Java class and restore project-owned code that should not have been removed.
