@@ -188,13 +188,14 @@ Useful MCreator Agent resources may include `workspace://overview`, `workspace:/
 
 ### Hard rules (agents)
 
-1. Treat `createGeckoLibElement` success **without** generated entity/model/renderer/init as **incomplete**.
-2. Prefer `generateModElement` (or create with `generateCode=true`) over full `regenerateCode` after creating GeckoLib entities.
-3. Do **not** hand-edit `elements/*.mod.json` when `updateGeckoLibElement` exists — disk edits diverge from the open MCreator in-memory model.
-4. Do **not** call full `regenerateCode` after create unless single-element generate is unavailable and a pre-regen snapshot exists (`git status`/file inventory). Always inspect deleted Java and `mcreator.gradle` afterward.
-5. Never trust fire-and-forget success strings like "initiated successfully" as proof of completion; require completion status + deleted/modified file report when the tool provides them.
-6. Register `metadata.files` before any regen (see Metadata Files Policy).
-7. If `mcreator.gradle` loses custom deps (e.g. `flatDir` / local jars), restore them before claiming build success.
+1. **MCP owns MCreator base work.** Prefer MCP for import, create, generate, update, validate, lock, list. Do **not** hand-write GeckoLib entity/model/renderer/init boilerplate when `createGeckoLibElement` (default `generateCode=true`) or `generateModElement` is available.
+2. **Custom gameplay is agent code, not MCP.** Transform libs (EnderAPI), packets, keybinds, lasers, feature handlers stay in root feature packages written by the agent.
+3. Treat `createGeckoLibElement` with empty `generatedFiles` / missing `metadata.files` as **incomplete**.
+4. Prefer `generateModElement` over full `regenerateCode`. Use `importBlockbenchItemModel` for normal (non-GeckoLib) item models.
+5. Do **not** hand-edit `elements/*.mod.json` when `updateGeckoLibElement` exists — disk edits diverge from the open MCreator in-memory model.
+6. Do **not** call full `regenerateCode` unless single-element generate is unavailable and a pre-regen snapshot exists. Always inspect `deletedFiles` and `mcreator.gradle`.
+7. Never trust fire-and-forget "initiated successfully" alone; use structured reports (`status`, `generatedFiles`, `deletedFiles`).
+8. Register `metadata.files` for any manual feature files before regen (see Metadata Files Policy).
 
 ### Preferred GeckoLib entity flow
 
