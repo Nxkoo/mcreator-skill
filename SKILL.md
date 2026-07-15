@@ -164,14 +164,53 @@ When MCreator Agent/MCP tools are available to the host agent, guide it to prefe
 - Deleting mod elements when requested.
 - Importing assets.
 - Locking or unlocking mod elements.
-- Regenerating code.
+- Generating a single element (prefer over full regen).
+- Regenerating code (dangerous; full workspace).
 - Running builds or client/server checks.
 - Reading plugin state.
 - Validating GeckoLib setup.
 
-Do not invent exact MCP tool names. If the current Codex session exposes tools such as `getWorkspaceInfo`, `listModElements`, `createElement`, `deleteElement`, `setModElementLock`, `regenerateCode`, `buildWorkspace`, `runClient`, `runServer`, `getGeckoLibStatus`, `listGeckoLibAssets`, `importGeckoLibAssets`, `createGeckoLibElement`, or `validateGeckoLibElement`, guide the host agent to prefer them for their matching operation after confirming they are currently available.
+Do not invent exact MCP tool names. Prefer tools after confirming they are listed by the active MCP session.
 
 Useful MCreator Agent resources may include `workspace://overview`, `workspace://elements`, `workspace://structure`, `workspace://geckolib/status`, and `workspace://geckolib/assets`. Read them when available instead of rediscovering the same facts from disk.
+
+### MCP tool truth table
+
+| Tool | Creates element | Generates Java | Scope | Notes |
+|---|---|---|---|---|
+| `importGeckoLibAssets` | no | no | assets only | Prefer for geo/anim/texture import |
+| `createGeckoLibElement` | yes (scaffold) | only if `generateCode=true` and tool supports it | one element metadata | **Not done** until Java/registries exist |
+| `updateGeckoLibElement` | updates definition | no | one element | Prefer over hand-editing `.mod.json` |
+| `generateModElement` | no | yes | one element (+ base registries) | Prefer over full `regenerateCode` |
+| `regenerateCode` | no | full workspace | **dangerous** | May delete untracked Java; rewrite `mcreator.gradle` |
+| `buildWorkspace` | no | no (build) | workspace | Await completion report when available |
+| `validateGeckoLibElement` | no | no | one element | Check assets/codegen postconditions |
+
+### Hard rules (agents)
+
+1. Treat `createGeckoLibElement` success **without** generated entity/model/renderer/init as **incomplete**.
+2. Prefer `generateModElement` (or create with `generateCode=true`) over full `regenerateCode` after creating GeckoLib entities.
+3. Do **not** hand-edit `elements/*.mod.json` when `updateGeckoLibElement` exists — disk edits diverge from the open MCreator in-memory model.
+4. Do **not** call full `regenerateCode` after create unless single-element generate is unavailable and a pre-regen snapshot exists (`git status`/file inventory). Always inspect deleted Java and `mcreator.gradle` afterward.
+5. Never trust fire-and-forget success strings like "initiated successfully" as proof of completion; require completion status + deleted/modified file report when the tool provides them.
+6. Register `metadata.files` before any regen (see Metadata Files Policy).
+7. If `mcreator.gradle` loses custom deps (e.g. `flatDir` / local jars), restore them before claiming build success.
+
+### Preferred GeckoLib entity flow
+
+```text
+getGeckoLibStatus
+→ importGeckoLibAssets
+→ createGeckoLibElement (complete definition: model, texture, hitbox, animations, headMovement)
+→ generateModElement  OR  create(... generateCode:true)
+→ validateGeckoLibElement
+→ compileJava / buildWorkspace (await completion)
+→ lock only if customizing generated Java
+```
+
+### Head movement
+
+`headMovement=true` in definition is not enough by itself for custom bone layouts. After generation, verify the model class rotates the correct bone name(s). If `nose`/`headwear` are siblings of `head` (not children), multi-bone rotation may be required.
 
 MCreator Agent cautions:
 
@@ -179,6 +218,7 @@ MCreator Agent cautions:
 - After create/delete or other workspace mutations, the MCreator UI may need an explicit workspace panel refresh.
 - Helper/client/network files that must survive regeneration must be represented in the owning mod element's `.mcreator` `metadata.files`.
 - Broad local Gradle or MCreator tests can be polluted by unrelated plugins in `%USERPROFILE%\.mcreator\plugins`; prefer the narrow reliable validation target for the current repo and report environmental pollution separately.
+- Full regenerate historically wiped custom `mcreator.gradle` dependency blocks and untracked package classes; always diff after regen.
 
 ## MCreator Metadata Files Policy
 
